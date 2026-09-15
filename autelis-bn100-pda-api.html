@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Autelis BN100 (Jandy/Zodiac PDA) — Unofficial HTTP API Reference</title>
+  <meta name="description" content="Unofficial developer reference for the Autelis Pool Control for Jandy/Zodiac PDA (model BN100): keypad.xml, keypad.cgi, authentication, timing, and differences from the RS Pool Control product." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a2421;
+      --muted: #4d5c56;
+      --paper: #f3f6f2;
+      --card: #ffffff;
+      --line: #c9d4cc;
+      --accent: #0b6e4f;
+      --accent-soft: #d8efe4;
+      --warn: #8a4b08;
+      --warn-bg: #fff4e5;
+      --code-bg: #e8eee9;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --serif: "Literata", Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #dff0e7 0%, transparent 55%),
+        linear-gradient(180deg, #eef3ef 0%, var(--paper) 240px);
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      line-height: 1.65;
+    }
+
+    a { color: var(--accent); }
+    a:hover { text-decoration-thickness: 2px; }
+
+    .wrap {
+      width: min(920px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2.5rem 0 4rem;
+    }
+
+    header.doc-hero {
+      padding: 1.25rem 0 2rem;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 2rem;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 0.75rem;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+      line-height: 1.15;
+      margin: 0 0 0.85rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 40rem;
+      margin: 0 0 1.25rem;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0 2.25rem;
+    }
+
+    nav.toc h2 {
+      font-size: 0.95rem;
+      margin: 0 0 0.6rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    nav.toc ol {
+      margin: 0;
+      padding-left: 1.2rem;
+      columns: 2;
+      column-gap: 2rem;
+    }
+
+    @media (max-width: 700px) {
+      nav.toc ol { columns: 1; }
+    }
+
+    nav.toc li { break-inside: avoid; margin: 0.25rem 0; }
+
+    h2 {
+      font-size: 1.55rem;
+      margin: 2.4rem 0 0.8rem;
+      padding-top: 0.4rem;
+      border-top: 1px solid var(--line);
+      letter-spacing: -0.015em;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin: 1.6rem 0 0.5rem;
+    }
+
+    p, li { color: var(--ink); }
+    .muted { color: var(--muted); }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 0.9rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.1rem 0;
+    }
+
+    .callout.warn {
+      border-left-color: var(--warn);
+      background: var(--warn-bg);
+    }
+
+    .callout p { margin: 0.35rem 0; }
+
+    figure {
+      margin: 1.4rem 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    figcaption {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding: 0.7rem 1rem 0.9rem;
+      border-top: 1px solid var(--line);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 1rem 0 1.4rem;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.8rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      background: #e7eee9;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    code, kbd {
+      font-family: var(--mono);
+      font-size: 0.86em;
+      background: var(--code-bg);
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: #15221d;
+      color: #e7f2ec;
+      padding: 1rem 1.1rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin: 1rem 0 1.4rem;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="doc-hero">
+      <p class="eyebrow">Unofficial developer reference</p>
+      <h1>Autelis BN100<br />Jandy / Zodiac PDA HTTP API</h1>
+      <p class="lede">
+        Field notes for talking to Autelis <strong>Pool Control for Jandy/Zodiac PDA</strong>
+        over HTTP. This product emulates a Jandy PDA remote on the RS‑485 bus and exposes
+        a web keypad — not the richer <code>status.xml</code> circuit API used by Autelis RS units.
+      </p>
+      <div class="meta">
+        <span>Model BN100</span>
+        <span>Firmware observed: web UI 1.0.2 / PDA 2.6.1</span>
+        <span>Document version 1.0 · 2026-09-15</span>
+      </div>
+    </header>
+
+    <nav class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#hardware">Hardware identity</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#vs-rs">PDA vs RS products</a></li>
+        <li><a href="#auth">Authentication &amp; transport</a></li>
+        <li><a href="#web-ui">Built-in web UI</a></li>
+        <li><a href="#keypad-xml">GET /keypad.xml</a></li>
+        <li><a href="#keypad-cgi">GET /keypad.cgi</a></li>
+        <li><a href="#status-xml">GET /status.xml</a></li>
+        <li><a href="#ajax">ajax.js conventions</a></li>
+        <li><a href="#timing">Timing &amp; reliability</a></li>
+        <li><a href="#examples">Client examples</a></li>
+        <li><a href="#limitations">Limitations &amp; unknowns</a></li>
+      </ol>
+    </nav>
+
+    <section id="hardware">
+      <h2>1. Hardware identity</h2>
+      <p>
+        The unit documented here is labeled <strong>Pool Control for Jandy/Zodiac PDA</strong>,
+        model <strong>BN100</strong>. It connects to the pool panel with a 4-conductor RS‑485
+        lead (terminal block marked <strong>GYBR</strong>), Ethernet for LAN access, and a
+        separate power input.
+      </p>
+
+      <figure>
+        <img src="autelis-bn100-label.jpg" alt="Autelis BN100 product label: Pool Control for Jandy/Zodiac PDA, model BN100, with GYBR, Ethernet, and Power connectors" />
+        <figcaption>Figure 1. Autelis BN100 label (photo of installed unit).</figcaption>
+      </figure>
+
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Value (this unit)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Product</td><td>Pool Control for Jandy/Zodiac PDA</td></tr>
+          <tr><td>Model</td><td>BN100</td></tr>
+          <tr><td>Vendor site</td><td>www.autelis.com (historical; product line discontinued)</td></tr>
+          <tr><td>Example MAC</td><td><code>00:04:A3:39:89:02</code></td></tr>
+          <tr><td>Panel link</td><td>RS‑485 via GYBR terminal (4-lead wire to Jandy/Zodiac PDA bus)</td></tr>
+          <tr><td>Network</td><td>Ethernet (HTTP, typically port 80)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <p><strong>Why this matters:</strong> community integrations (openHAB, Home Assistant, etc.) mostly target Autelis <em>RS / Pool Control</em> firmware with equipment channels in <code>status.xml</code>. The PDA SKU behaves differently: the useful automation surface is the keypad emulator.</p>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>2. Architecture</h2>
+      <p>
+        Intelligence lives in the Jandy/Zodiac outdoor control panel. The physical PDA (and this Autelis)
+        is a dumb terminal: it receives display updates and may return a single keypress on each bus cycle.
+        Autelis bridges that RS‑485 conversation to HTTP so a browser or app can act as the remote.
+      </p>
+      <pre><code>iOS / browser / script
+        │  HTTP (Basic Auth)
+        ▼
+   Autelis BN100  ──Ethernet──► LAN / WAN
+        │
+        │  RS-485 (GYBR, 4-lead)
+        ▼
+ Jandy / Zodiac Aqualink panel
+        │
+        └── pumps, heaters, auxiliaries, menus, …</code></pre>
+      <p class="muted">
+        Observed Autelis web UI version on System Information: <code>1.0.2</code>.
+        PDA firmware string seen on splash: <code>PPD: PDA 2.6.1</code>.
+      </p>
+    </section>
+
+    <section id="vs-rs">
+      <h2>3. PDA vs RS Autelis products</h2>
+      <table>
+        <thead>
+          <tr><th></th><th>BN100 PDA (this doc)</th><th>Typical Autelis RS / Pool Control</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Role</td>
+            <td>Emulates AquaPalm / PDA remote</td>
+            <td>Exposes named circuits, temps, pumps, chem</td>
+          </tr>
+          <tr>
+            <td>Primary API</td>
+            <td><code>/keypad.xml</code> + <code>/keypad.cgi</code></td>
+            <td><code>/status.xml</code>, <code>/names.xml</code>, <code>/set.cgi</code>, …</td>
+          </tr>
+          <tr>
+            <td>Web UI</td>
+            <td><code>keypad.htm</code>, <code>systeminfo.htm</code>, <code>settings.htm</code></td>
+            <td>Dashboard-style equipment pages</td>
+          </tr>
+          <tr>
+            <td><code>status.xml</code></td>
+            <td>Often minimal (e.g. version only)</td>
+            <td>Full <code>system</code> / <code>equipment</code> / <code>temp</code> tree</td>
+          </tr>
+          <tr>
+            <td>Control model</td>
+            <td>Navigate menus with Up/Down/Select/Back</td>
+            <td>Direct on/off and setpoints by name</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="auth">
+      <h2>4. Authentication &amp; transport</h2>
+      <ul>
+        <li>HTTP on port <strong>80</strong> by default (HTTPS not observed on stock BN100).</li>
+        <li>HTTP <strong>Basic Authentication</strong> on protected resources (<code>401 Unauthorized: Password required</code> without credentials).</li>
+        <li>Factory-ish defaults are commonly discussed as <code>admin</code> / <code>admin</code>; change them. Do not embed real passwords in published clients.</li>
+        <li>iOS / modern browsers need App Transport Security exceptions (or a TLS reverse proxy) for cleartext HTTP.</li>
+      </ul>
+      <pre><code>Authorization: Basic base64(username:password)</code></pre>
+    </section>
+
+    <section id="web-ui">
+      <h2>5. Built-in web UI map</h2>
+      <table>
+        <thead>
+          <tr><th>Path</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/systeminfo.htm</code></td><td>System information (includes Autelis version string)</td></tr>
+          <tr><td><code>/settings.htm</code></td><td>Device settings</td></tr>
+          <tr><td><code>/keypad.htm</code></td><td>PDA keypad UI (source of truth for this API)</td></tr>
+          <tr><td><code>/ajax.js</code></td><td>Shared XHR helper (gzip-compressed on device)</td></tr>
+          <tr><td><code>/autelis.css</code>, <code>/autelis.png</code></td><td>Static assets</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="keypad-xml">
+      <h2>6. <code>GET /keypad.xml</code> — LCD snapshot</h2>
+      <p>
+        Returns the current emulated PDA display. The stock UI polls this about every
+        <strong>100&nbsp;ms</strong> when awake (slower in sleep). Pass the document element of the
+        XML response into your parser (same as <code>updateKeypad(xmlData)</code> in <code>keypad.htm</code>).
+      </p>
+
+      <h3>Example (active menu)</h3>
+      <pre><code>&lt;response&gt;
+  &lt;b0&gt;     SUN  4:07PM&lt;/b0&gt;
+  &lt;b1&gt;AIR         POOL&lt;/b1&gt;
+  &lt;b2&gt; 93`     85`    &lt;/b2&gt;
+  &lt;b3&gt;&lt;/b3&gt;
+  &lt;b4&gt;POOL MODE     ON&lt;/b4&gt;
+  &lt;b5&gt;POOL HEATER  OFF&lt;/b5&gt;
+  &lt;b6&gt;SPA MODE     OFF&lt;/b6&gt;
+  &lt;b7&gt;SPA HEATER   OFF&lt;/b7&gt;
+  &lt;b8&gt;MENU            &lt;/b8&gt;
+  &lt;b9&gt;EQUIPMENT ON/OFF&lt;/b9&gt;
+  &lt;b10&gt;&lt;/b10&gt;
+  &lt;b11&gt;&lt;/b11&gt;
+  &lt;hll&gt;4&lt;/hll&gt;
+  &lt;effects&gt;15,13,15,0&lt;/effects&gt;
+  &lt;offset&gt;0,0,0&lt;/offset&gt;
+  &lt;sleep&gt;0&lt;/sleep&gt;
+&lt;/response&gt;</code></pre>
+
+      <h3>Fields</h3>
+      <table>
+        <thead>
+          <tr><th>Element</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>b0</code> … <code>b11</code></td>
+            <td>Text buffer lines. The web UI shows <strong>10</strong> visible rows (<code>kptxt0</code>–<code>kptxt9</code>), optionally remapped via <code>offset</code>.</td>
+          </tr>
+          <tr>
+            <td><code>hll</code></td>
+            <td>Highlighted line index for the visible screen. Values <strong>≥&nbsp;10</strong> (often <code>15</code>) mean “no highlight” (splash / idle).</td>
+          </tr>
+          <tr>
+            <td><code>effects</code></td>
+            <td>Comma list: <code>line,start,end,style</code>. Style <code>1</code> = background emphasis; <code>4</code> = underline (per <code>keypad.htm</code>). Ignored when indices are out of range.</td>
+          </tr>
+          <tr>
+            <td><code>offset</code></td>
+            <td>Comma list: <code>shift,start,end</code>. When <code>shift&nbsp;&gt;&nbsp;0</code>, visible rows in <code>[start,end]</code> read from buffer index <code>i + shift</code> with wrap inside that window (scroll region).</td>
+          </tr>
+          <tr>
+            <td><code>sleep</code></td>
+            <td><code>1</code> = sleep mode (show “SLEEP MODE / Press a key…”); <code>0</code> = awake.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>“Not ready” frames</h3>
+      <p>
+        <code>keypad.htm</code> skips updates when <code>xmlData.childNodes.length &lt; 15</code>, then retries
+        after 50&nbsp;ms (1&nbsp;s while sleeping). Clients should keep the last good frame instead of
+        blanking the UI on short/partial documents.
+      </p>
+
+      <h3>Special characters (display mapping)</h3>
+      <p>The web UI remaps buffer glyphs before display:</p>
+      <table>
+        <thead>
+          <tr><th>Raw</th><th>Shown as</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>_</code></td><td>↓</td></tr>
+          <tr><td><code>^</code></td><td>↑</td></tr>
+          <tr><td><code>`</code> (backtick)</td><td>°</td></tr>
+          <tr><td><code>&gt;</code> or <code>}</code></td><td>→</td></tr>
+          <tr><td><code>{</code></td><td>←</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="keypad-cgi">
+      <h2>7. <code>GET /keypad.cgi?key=N</code> — keypress</h2>
+      <p>
+        Injects a PDA key into the Autelis→panel conversation. The stock UI calls this from
+        <code>doButton(num)</code> and does <em>not</em> wait for a new screen; continuous
+        <code>/keypad.xml</code> polling picks up the result.
+      </p>
+      <p>Successful responses are a tiny body (observed: literal <code>1</code>).</p>
+
+      <table>
+        <thead>
+          <tr><th>key=</th><th>UI label</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>0</code></td><td>(power / unload)</td><td>Sent from <code>window.onbeforeunload</code> as <code>doPower()</code></td></tr>
+          <tr><td><code>1</code></td><td>1</td><td>Soft key</td></tr>
+          <tr><td><code>2</code></td><td>Back</td><td></td></tr>
+          <tr><td><code>3</code></td><td>2</td><td>Soft key</td></tr>
+          <tr><td><code>4</code></td><td>Select</td><td>Also keyboard Enter / Space / →</td></tr>
+          <tr><td><code>5</code></td><td>Dn</td><td>Down</td></tr>
+          <tr><td><code>6</code></td><td>Up</td><td>Up</td></tr>
+        </tbody>
+      </table>
+
+      <pre><code>GET /keypad.cgi?key=6&amp;timestamp=1710000000000
+Authorization: Basic …</code></pre>
+
+      <div class="callout warn">
+        <p><strong>One key per bus cycle.</strong> The panel handshake is on the order of ~1&nbsp;Hz. Sending Up/Down faster than that drops presses — symptoms: highlight moves once, then appears stuck. Pace keys ≈&nbsp;0.8–1.0&nbsp;s apart (or queue/coalesce navigation).</p>
+      </div>
+    </section>
+
+    <section id="status-xml">
+      <h2>8. <code>GET /status.xml</code> (limited on PDA)</h2>
+      <p>
+        Present and authenticated, but on BN100 PDA firmware it may only expose a thin
+        <code>system</code> tree (commonly just a version such as <code>1.0.2</code>). Do not assume
+        RS-style <code>equipment</code> / <code>temp</code> channels exist.
+      </p>
+      <p class="muted">
+        Related RS-oriented endpoints (<code>/names.xml</code>, <code>/pumps.xml</code>, <code>/chem.xml</code>,
+        <code>/set.cgi</code>) are not the primary control path for this SKU and may 404 or be empty.
+      </p>
+    </section>
+
+    <section id="ajax">
+      <h2>9. <code>ajax.js</code> conventions (important for clients)</h2>
+      <p>The device ships a small XHR helper. Two behaviors matter for third-party clients:</p>
+      <ol>
+        <li>
+          <strong>Cache busting:</strong> every request appends
+          <code>timestamp=&lt;epochMillis&gt;</code> (using <code>?</code> or <code>&amp;</code> as needed).
+          Without this, proxies or <code>URLSession</code> caching can freeze <code>keypad.xml</code>
+          after the first frame.
+        </li>
+        <li>
+          <strong>Async completion polling:</strong> requests are opened asynchronously; a 250&nbsp;ms
+          timer drains completed XHRs. Treat Autelis as happiest with serialized or lightly concurrent traffic.
+        </li>
+      </ol>
+      <pre><code>// Equivalent cache-buster
+url += (url.includes('=') ? '&amp;' : '?') + 'timestamp=' + Date.now()</code></pre>
+      <p>Also set <code>Cache-Control: no-cache</code> / use an ephemeral URL session where possible.</p>
+    </section>
+
+    <section id="timing">
+      <h2>10. Timing &amp; reliability checklist</h2>
+      <div class="grid-2">
+        <div class="callout">
+          <p><strong>Do</strong></p>
+          <p>• Poll <code>/keypad.xml</code> ~100–250&nbsp;ms when awake</p>
+          <p>• Pace keypresses ~1&nbsp;s</p>
+          <p>• Always add <code>timestamp=</code></p>
+          <p>• Keep last good LCD if a frame looks incomplete</p>
+          <p>• Send <code>key=0</code> when tearing down a session (optional, matches browser unload)</p>
+        </div>
+        <div class="callout warn">
+          <p><strong>Avoid</strong></p>
+          <p>• Bursting Up/Down without delay</p>
+          <p>• Interleaving many parallel GETs on tiny firmware</p>
+          <p>• Assuming RS <code>/set.cgi?name=circuit…</code> semantics</p>
+          <p>• Publishing credentials or open WAN admin/admin</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="examples">
+      <h2>11. Client examples</h2>
+
+      <h3>cURL — read screen</h3>
+      <pre><code>curl -u 'USER:PASS' \
+  "http://AUTELIS_HOST/keypad.xml?timestamp=$(date +%s000)"</code></pre>
+
+      <h3>cURL — press Select</h3>
+      <pre><code>curl -u 'USER:PASS' \
+  "http://AUTELIS_HOST/keypad.cgi?key=4&amp;timestamp=$(date +%s000)"</code></pre>
+
+      <h3>Pseudo-client loop</h3>
+      <pre><code>connect with Basic Auth
+loop every 200ms:
+    GET /keypad.xml?timestamp=now
+    if sleep == 1: show sleep UI; continue
+    if childCount &lt; 15: keep previous frame; continue
+    render b0..b9 with offset + hll + effects
+
+onKey(code):
+    wait until ≥900ms since last key
+    GET /keypad.cgi?key=code&amp;timestamp=now
+    # do not require an immediate xml refresh; next poll updates LCD</code></pre>
+    </section>
+
+    <section id="limitations">
+      <h2>12. Limitations &amp; unknowns</h2>
+      <ul>
+        <li>This is an <strong>unofficial</strong> reverse-engineering note from a live BN100 + <code>keypad.htm</code> / <code>ajax.js</code>. Autelis no longer publishes a maintained PDA command manual.</li>
+        <li>Exact XML root handling and “not ready” edge cases may vary by firmware build.</li>
+        <li>Soft keys <code>1</code> / <code>2</code> are context-dependent (menu-defined).</li>
+        <li>No UPnP/discovery procedure is documented here; configure host/IP (or a forwarded hostname) manually.</li>
+        <li>Exposing the device on the public internet requires strong credentials and ideally a VPN or authenticated reverse proxy — the stock stack is cleartext HTTP + Basic Auth.</li>
+      </ul>
+
+      <h3>Related open projects (RS‑485 / PDA context)</h3>
+      <ul>
+        <li><a href="https://github.com/earlephilhower/aquaweb">earlephilhower/aquaweb</a> — DIY PDA/screen emulator over serial (similar UX, different transport).</li>
+        <li><a href="https://github.com/aqualinkd/AqualinkD">aqualinkd/AqualinkD</a> — broader Jandy RS‑485 protocol notes.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>
+        Compiled from BN100 hardware labeling, Autelis <code>keypad.htm</code> / <code>ajax.js</code>,
+        and live HTTP traces against a Jandy/Zodiac PDA installation (2026).
+        Not affiliated with Autelis, LLC, Zodiac, or Jandy.
+      </p>
+      <p>
+        Suggested citation: <em>Autelis BN100 (Jandy/Zodiac PDA) Unofficial HTTP API Reference, v1.0</em>.
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
