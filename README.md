@@ -11,6 +11,8 @@ This product emulates a Jandy PDA remote on the RS‑485 bus and exposes a web k
 
 The reference covers `keypad.xml`, `keypad.cgi`, authentication, timing, and how the PDA SKU differs from Autelis RS Pool Control.
 
+On a local network the default hostname is `poolcontrol` (`http://poolcontrol/`).
+
 ## Disclaimer
 
 This is independent documentation from observed device behavior. It is not affiliated with Autelis, Jandy, or Zodiac.

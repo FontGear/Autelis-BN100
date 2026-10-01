@@ -256,7 +256,7 @@
       <div class="meta">
         <span>Model BN100</span>
         <span>Firmware observed: web UI 1.0.2 / PDA 2.6.1</span>
-        <span>Document version 1.0 · 2026-09-15</span>
+        <span>Document version 1.1 · 2026-10-01</span>
       </div>
     </header>
 
@@ -303,6 +303,7 @@
           <tr><td>Example MAC</td><td><code>00:04:A3:39:89:02</code></td></tr>
           <tr><td>Panel link</td><td>RS‑485 via GYBR terminal (4-lead wire to Jandy/Zodiac PDA bus)</td></tr>
           <tr><td>Network</td><td>Ethernet (HTTP, typically port 80)</td></tr>
+          <tr><td>Default hostname</td><td><code>poolcontrol</code> (LAN; try <code>http://poolcontrol/</code>)</td></tr>
         </tbody>
       </table>
 
@@ -374,6 +375,7 @@
       <h2>4. Authentication &amp; transport</h2>
       <ul>
         <li>HTTP on port <strong>80</strong> by default (HTTPS not observed on stock BN100).</li>
+        <li>On a local network, the default hostname is <code>poolcontrol</code>. Clients can usually open <code>http://poolcontrol/</code>; use the DHCP IP if name resolution is unavailable.</li>
         <li>HTTP <strong>Basic Authentication</strong> on protected resources (<code>401 Unauthorized: Password required</code> without credentials).</li>
         <li>Factory-ish defaults are commonly discussed as <code>admin</code> / <code>admin</code>; change them. Do not embed real passwords in published clients.</li>
         <li>iOS / modern browsers need App Transport Security exceptions (or a TLS reverse proxy) for cleartext HTTP.</li>
@@ -566,13 +568,15 @@ url += (url.includes('=') ? '&amp;' : '?') + 'timestamp=' + Date.now()</code></p
     <section id="examples">
       <h2>11. Client examples</h2>
 
+      <p class="muted">Examples use the default LAN hostname <code>poolcontrol</code>. Substitute the DHCP IP (or a forwarded hostname) if that name does not resolve.</p>
+
       <h3>cURL — read screen</h3>
       <pre><code>curl -u 'USER:PASS' \
-  "http://AUTELIS_HOST/keypad.xml?timestamp=$(date +%s000)"</code></pre>
+  "http://poolcontrol/keypad.xml?timestamp=$(date +%s000)"</code></pre>
 
       <h3>cURL — press Select</h3>
       <pre><code>curl -u 'USER:PASS' \
-  "http://AUTELIS_HOST/keypad.cgi?key=4&amp;timestamp=$(date +%s000)"</code></pre>
+  "http://poolcontrol/keypad.cgi?key=4&amp;timestamp=$(date +%s000)"</code></pre>
 
       <h3>Pseudo-client loop</h3>
       <pre><code>connect with Basic Auth
@@ -594,7 +598,7 @@ onKey(code):
         <li>This is an <strong>unofficial</strong> reverse-engineering note from a live BN100 + <code>keypad.htm</code> / <code>ajax.js</code>. Autelis no longer publishes a maintained PDA command manual.</li>
         <li>Exact XML root handling and “not ready” edge cases may vary by firmware build.</li>
         <li>Soft keys <code>1</code> / <code>2</code> are context-dependent (menu-defined).</li>
-        <li>No UPnP/discovery procedure is documented here; configure host/IP (or a forwarded hostname) manually.</li>
+        <li>No UPnP/discovery procedure is documented here. On the LAN, start with the default hostname <code>poolcontrol</code>, then fall back to the DHCP IP. For remote access, use a forwarded hostname.</li>
         <li>Exposing the device on the public internet requires strong credentials and ideally a VPN or authenticated reverse proxy — the stock stack is cleartext HTTP + Basic Auth.</li>
       </ul>
 
@@ -612,7 +616,7 @@ onKey(code):
         Not affiliated with Autelis, LLC, Zodiac, or Jandy.
       </p>
       <p>
-        Suggested citation: <em>Autelis BN100 (Jandy/Zodiac PDA) Unofficial HTTP API Reference, v1.0</em>.
+        Suggested citation: <em>Autelis BN100 (Jandy/Zodiac PDA) Unofficial HTTP API Reference, v1.1</em>.
       </p>
     </footer>
   </div>
